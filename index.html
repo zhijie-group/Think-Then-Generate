@@ -1,85 +1,321 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Gallery</title>
+    <title>Results Comparison Gallery</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f4f4f4;
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
         }
-        .gallery-container {
+
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             display: flex;
             flex-direction: column;
+            height: 100vh;
+        }
+
+        /* 顶部导航与指令区域 */
+        header {
+            background-color: var(--card-bg);
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1600px;
+            margin: 0 auto;
+            gap: 20px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
             align-items: center;
         }
-        .image {
-            width: 300px;
-            height: 300px;
-            object-fit: cover;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
-        }
-        .image:hover {
-            transform: scale(1.05);
-        }
-        .controls {
-            margin-top: 20px;
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            max-width: 400px;
-        }
+
         button {
-            padding: 10px 20px;
-            font-size: 16px;
+            background: var(--card-bg);
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 8px 12px;
             cursor: pointer;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 5px;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
         }
+
+        button:hover {
+            background-color: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
         button:disabled {
-            background-color: #ccc;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        button svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .instruction-box {
+            flex: 1;
+            background-color: #f1f3f5;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .instruction-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        /* 图片展示网格 */
+        main {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .grid-container {
+            display: grid;
+            /* 自动适应宽度，最小宽度250px */
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            gap: 20px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .model-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .model-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+
+        .model-header {
+            padding: 12px;
+            text-align: center;
+            font-weight: 700;
+            background-color: #fff;
+            border-bottom: 1px solid #eee;
+            color: var(--primary-color);
+        }
+
+        /* 针对 Ours 模型的高亮样式 */
+        .model-card.is-ours .model-header {
+            background-color: #e3f2fd;
+            color: var(--accent-color);
+        }
+
+        .image-wrapper {
+            width: 100%;
+            /* 设置固定宽高比，防止图片跳动，这里设为 1:1 */
+            aspect-ratio: 1 / 1; 
+            background-color: #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* 裁剪适应，如果是生图对比通常用 contain 或 cover */
+            transition: transform 0.5s ease;
+        }
+        
+        /* 点击图片查看大图的简单效果 */
+        .image-wrapper img:active {
+            transform: scale(1.5);
+            cursor: zoom-in;
+        }
+
+        .empty-state {
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 10px;
+            font-size: 0.8rem;
+            color: #888;
         }
     </style>
 </head>
 <body>
-    <div class="gallery-container">
-        <img id="gallery-image" class="image" src="image1.jpg" alt="Gallery Image">
+
+<header>
+    <div class="nav-container">
         <div class="controls">
-            <button id="prev-btn" onclick="changeImage(-1)">Prev</button>
-            <button id="next-btn" onclick="changeImage(1)">Next</button>
+            <button id="btn-prev" onclick="changeIndex(-1)" title="Previous Prompt">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
+            <span id="page-indicator" style="font-size: 0.9rem; font-weight: bold; min-width: 60px; text-align: center;">1 / 1</span>
+            <button id="btn-next" onclick="changeIndex(1)" title="Next Prompt">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+        </div>
+
+        <div class="instruction-box">
+            <span class="instruction-label">Instruction / Prompt</span>
+            <span id="prompt-text">Loading...</span>
         </div>
     </div>
+</header>
 
-    <script>
-        const images = [
-            "image1.jpg",
-            "image2.jpg",
-            "image3.jpg",
-            "image4.jpg",
-            "image5.jpg"
-        ];
+<main>
+    <div class="grid-container" id="gallery-grid">
+        </div>
+</main>
 
-        let currentIndex = 0;
+<footer>
+    Generated Comparison Viewer
+</footer>
 
-        function changeImage(direction) {
-            currentIndex += direction;
-            if (currentIndex < 0) currentIndex = images.length - 1;
-            if (currentIndex >= images.length) currentIndex = 0;
+<script>
+    // --- 配置区域 ---
+    
+    // 1. 这里定义你需要展示的模型名称，顺序必须对应 found_images 数组中的顺序
+    const modelNames = [
+        "Ours", 
+        "Qwen-Image", 
+        "GLM-Image", 
+        "Nanobanana-pro", 
+        "GPT-4o"
+    ];
 
-            document.getElementById("gallery-image").src = images[currentIndex];
-            document.getElementById("prev-btn").disabled = currentIndex === 0;
-            document.getElementById("next-btn").disabled = currentIndex === images.length - 1;
+    // 2. 这里放入你的 JSON 数据列表
+    const data = [
+        {
+            "t2i_prompt": "A math teacher stands at the blackboard explaining how to solve the equation 2x − 4 = 10, with all solution steps shown on the board.",
+            "index": "0",
+            "found_images": [
+                "images/ours/0.jpg",
+                "images/qwen/0.jpg",
+                "images/glm/0.jpg",
+                "images/nano/0.jpg", 
+                "images/gpt4o/0.jpg" 
+            ]
+        },
+        {
+            "t2i_prompt": "A futuristic city with flying cars and neon lights in cyberpunk style.",
+            "index": "1",
+            "found_images": [
+                "images/ours/1.jpg",
+                "images/qwen/1.jpg",
+                "images/glm/1.jpg",
+                "images/nano/1.jpg",
+                "images/gpt4o/1.jpg"
+            ]
         }
-    </script>
+    ];
+
+    // --- 逻辑区域 ---
+
+    let currentIndex = 0;
+
+    function init() {
+        renderPage(currentIndex);
+    }
+
+    function changeIndex(direction) {
+        const newIndex = currentIndex + direction;
+        if (newIndex >= 0 && newIndex < data.length) {
+            currentIndex = newIndex;
+            renderPage(currentIndex);
+        }
+    }
+
+    function renderPage(index) {
+        const currentItem = data[index];
+        
+        // 1. 更新 Prompt
+        document.getElementById('prompt-text').textContent = currentItem.t2i_prompt;
+        
+        // 2. 更新页码指示器
+        document.getElementById('page-indicator').textContent = `${index + 1} / ${data.length}`;
+        
+        // 3. 更新按钮状态
+        document.getElementById('btn-prev').disabled = index === 0;
+        document.getElementById('btn-next').disabled = index === data.length - 1;
+
+        // 4. 渲染图片网格
+        const grid = document.getElementById('gallery-grid');
+        grid.innerHTML = ''; // 清空当前内容
+
+        modelNames.forEach((name, i) => {
+            const card = document.createElement('div');
+            // 如果是 Ours 模型，添加特殊样式类
+            card.className = `model-card ${name === 'Ours' ? 'is-ours' : ''}`;
+
+            // 获取图片路径，如果数据中没有该索引的图片，则显示为空
+            // 注意：这里为了演示，如果本地没有图片，我使用了在线占位符。
+            // 实际使用时，请删除 "|| getPlaceholder..." 部分。
+            let imgSrc = currentItem.found_images[i]; 
+            
+            // --- 演示专用逻辑 (如果图片加载失败或只是测试，使用假图) ---
+            // 实际部署请移除下方 onerror 的处理，直接使用 imgSrc
+            const placeholderParams = `text=${encodeURIComponent(name)}`;
+            const fallbackSrc = `https://placehold.co/600x600/e0e0e0/333?${placeholderParams}`;
+            
+            // 构建 HTML
+            card.innerHTML = `
+                <div class="model-header">${name}</div>
+                <div class="image-wrapper">
+                    <img src="${imgSrc}" 
+                         alt="${name} output" 
+                         onerror="this.onerror=null;this.src='${fallbackSrc}';" 
+                         loading="lazy">
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', init);
+
+</script>
+
 </body>
 </html>
