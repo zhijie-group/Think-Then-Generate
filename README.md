@@ -7,25 +7,23 @@
 [![Project Page](https://img.shields.io/badge/Website-Gallery-blue)](https://zhijie-group.github.io/Think-Then-Generate/)
 
 <img src="assets/demo.png" width="100%">
-
+More results can be found in the gallery(link).
 </div>
 
 ---
 
 ## 🧠 How it Works
 
-Traditional text-to-image models often map words to pixels without truly understanding the implicit semantics behind a prompt. To break this limitation, our pipeline operates in three key stages:
+Most existing Text-to-Image (T2I) models act as simple **text-pixel mappers**—they encode text without truly understanding it. To bridge the gap between abstract user prompts and concrete visual pixels, we propose the **Think-Then-Generate** paradigm:
 
-1.  **Chain-of-Thought (CoT) Reasoning** 
-    * By fine-tuning **Qwen2.5-VL**, we activate the model's reasoning capabilities.
-    * Instead of blindly generating, the model analyzes the user's request, breaking down scene composition, lighting, and object relationships to formulate a "refined prompt."
+### 1. Phase I: Reasoning Activation
+We first activate the reasoning potential of the LLM-based text encoder via lightweight SFT. Instead of directly passing the raw prompt to the generator, the LLM is encouraged to reason about the user's intent and rewrite the prompt into a detailed, structured description that serves as conditioning for the DiT decoders.
 
-2.  **Dual-GRPO Reinforcement Learning** 
-    * We introduce a collaborative RL strategy where the LLM encoder and the DiT (Diffusion Transformer) generator evolve together.
-    * The LLM learns to draft better instructions, while the DiT enhances its rendering fidelity based on direct visual feedback.
+### 2. Phase II: Co-Evolution via Dual-GRPO
+To ensure the reasoning actually improves image quality, we employ **Dual-GRPO** to co-optimize both the "Brain" (LLM) and the "Painter" (DiT Backbone):
 
-3.  **Bridging Logic and Vision** 
-    * The optimized prompt acts as a semantic bridge, ensuring the final output is a deep, accurate realization of the user's original intent—especially for complex logic like multi-step instructions or spatial reasoning.
+* **For the LLM Encoder:** It is reinforced using **image-grounded rewards**. This forces the model to recall world knowledge and infer visual details that lead to better images.
+* **For the Diffusion Backbone:** It is simultaneously pushed to produce images that are not just high-quality, but **semantically consistent** with the LLM's complex reasoning.
 
 <img src="assets/pipeline.png" width="100%">
 
@@ -35,7 +33,7 @@ Install the necessary dependencies:
 
 ```bash
 pip install torch transformers diffusers accelerate
-git clone
+git clone https://github.com/zhijie-group/Think-Then-Generate.git
 ```
 
 ## 🚀 Inference
