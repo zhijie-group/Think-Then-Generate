@@ -6,7 +6,7 @@
 [![Hugging Face](https://img.shields.io/badge/🤗%20Hugging%20Face-Model-ffd21e)](https://huggingface.co/SJTU-Deng-Lab/Think-Then-Generate-T2I/tree/main)
 [![Project Page](https://img.shields.io/badge/Website-Gallery-blue)](https://zhijie-group.github.io/Think-Then-Generate/)
 
-<img src="assets/pipeline.png" width="100%">
+<img src="assets/demo.png" width="100%">
 
 </div>
 
@@ -27,12 +27,15 @@ Traditional text-to-image models often map words to pixels without truly underst
 3.  **Bridging Logic and Vision** 
     * The optimized prompt acts as a semantic bridge, ensuring the final output is a deep, accurate realization of the user's original intent—especially for complex logic like multi-step instructions or spatial reasoning.
 
+<img src="assets/pipeline.png" width="100%">
+
 ## 🛠️ Installation
 
 Install the necessary dependencies:
 
 ```bash
 pip install torch transformers diffusers accelerate
+git clone
 ```
 
 ## 🚀 Inference
